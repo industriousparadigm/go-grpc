@@ -6,17 +6,17 @@ import (
 	"log"
 	"net"
 
-	"github.com/industriousparadigm/go-grpc/calculator/calcpb"
+	"github.com/industriousparadigm/go-grpc/calculator/calculatorpb"
 	"google.golang.org/grpc"
 )
 
 type server struct{}
 
-func (*server) Sum(ctx context.Context, req *calcpb.SumRequest) (*calcpb.SumResponse, error) {
+func (*server) Sum(ctx context.Context, req *calculatorpb.SumRequest) (*calculatorpb.SumResponse, error) {
 	fmt.Printf("Sum function was invoked with %v\n", req)
 	a, b := req.GetA(), req.GetB()
 	sum := a + b
-	res := &calcpb.SumResponse{
+	res := &calculatorpb.SumResponse{
 		SumResult: sum,
 	}
 	return res, nil
@@ -31,7 +31,7 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-	calcpb.RegisterCalculatorServiceServer(s, &server{})
+	calculatorpb.RegisterCalculatorServiceServer(s, &server{})
 
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve?! %v", err)
