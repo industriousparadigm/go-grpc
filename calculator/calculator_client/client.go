@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/industriousparadigm/go-grpc/calculator/calculatorpb"
@@ -20,7 +21,9 @@ func main() {
 
 	c := calculatorpb.NewCalculatorServiceClient(cc)
 
-	doUnary(c)
+	// doUnary(c)
+
+	doServerStreaming(c)
 }
 
 func doUnary(c calculatorpb.CalculatorServiceClient) {
@@ -36,4 +39,27 @@ func doUnary(c calculatorpb.CalculatorServiceClient) {
 	}
 
 	log.Printf("response from Sum: %v", res.SumResult)
+}
+
+func doServerStreaming(c calculatorpb.CalculatorServiceClient) {
+	fmt.Println("Initiating a server stream RPC...")
+	req := &calculatorpb.PrimeNumberDecompositionRequest{
+		InputNumber: 327,
+	}
+
+	resStream, err := c.PrimeNumberDecomposition(context.Background(), req)
+	if err != nil {
+		log.Fatalf("error while calling Server Stream RPC: %v", err)
+	}
+	for {
+		msg, err := resStream.Recv()
+		if err == io.EOF {
+			log.Println("Stream is done.")
+			break // meaning nothing more is being streamed
+		}
+		if err != nil {
+			log.Fatalf("error while reading stream: %v", err)
+		}
+		log.Printf("PrimeNumberDecomposition response: %v", msg.GetResult())
+	}
 }
